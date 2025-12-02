@@ -1,6 +1,6 @@
 # Calculadora de Dias
 
-<img width="800" alt="preview" src="[https://via.placeholder.com/800x400?text=Preview+da+Aplicacao](https://i.ibb.co/RGnTxMfk/image.png)" />
+<img width="800" alt="preview" src="https://i.ibb.co/RGnTxMfk/image.png"/>
 
 Uma calculadora simples e funcional que permite selecionar duas datas em um calendário interativo e descobrir rapidamente quantos dias existem entre elas — incluindo as duas datas.  
 Feita com **HTML, Tailwind CSS e jQuery**, sem build e sem dependências pesadas.
