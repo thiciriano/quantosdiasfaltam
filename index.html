@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Calculadora de Dias - Thiago Neves</title>
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body, html { height: 100vh; margin: 0 auto;}
+  </style>
+</head>
+<body class="bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center">
+  <div class="bg-white rounded-2xl shadow-2xl p-6 max-w-lg w-full mx-2">
+    <h1 class="text-3xl font-bold text-center text-gray-800 mb-2">Calculadora de Dias</h1>
+
+    <!-- área onde mostra as datas escolhidas -->
+    <div class="text-center mb-6 space-y-3">
+      <div class="text-lg">
+        <span class="font-semibold">Início:</span>
+        <span id="data-inicio" class="text-indigo-600">Clique no calendário</span>
+      </div>
+      <div class="text-lg">
+        <span class="font-semibold">Fim:</span>
+        <span id="data-fim" class="text-indigo-600">Clique novamente</span>
+      </div>
+      <div id="resultado" class="text-2xl font-bold text-green-600 mt-4 h-1">
+        Selecione duas datas
+      </div>
+    </div>
+
+    <!-- o "calendário" mesmo -->
+    <div class="bg-gray-50 rounded-lg p-6">
+      <div class="flex justify-between items-center mb-4">
+        <!-- botãozinho pra voltar o mês -->
+        <button id="prev" class="text-2xl font-bold text-gray-700 hover:text-indigo-600">&lt;</button>
+
+        <!-- aqui aparece o mês e o ano -->
+        <h2 id="mes-ano" class="text-xl font-semibold text-gray-800"></h2>
+
+        <!-- e esse é o botão pra ir pro próximo mês -->
+        <button id="next" class="text-2xl font-bold text-gray-700 hover:text-indigo-600">&gt;</button>
+      </div>
+
+      <!-- nomes dos dias da semana -->
+      <div class="grid grid-cols-7 gap-2 text-center font-medium text-gray-600 text-sm">
+        <div>Dom</div><div>Seg</div><div>Ter</div><div>Qua</div><div>Qui</div><div>Sex</div><div>Sáb</div>
+      </div>
+
+      <!-- onde os dias vão ser colocados -->
+      <div id="dias" class="grid grid-cols-7 gap-2 mt-3 text-center"></div>
+    </div>
+
+    <footer class="text-center mt-6 text-gray-500 text-sm">
+      Thiago Neves • 2025
+    </footer>
+  </div>
+
+<script>
+$(document).ready(function() {
+
+  // pegando a data de hoje e tal
+  let hoje = new Date();
+  let anoAtual = hoje.getFullYear();
+  let mesAtual = hoje.getMonth(); // janeiro = 0
+  let dataInicio = null;
+  let dataFim = null;
+
+  // função que refaz o calendário sempre que troca alguma coisa
+  function atualizarCalendario() {
+    $('#dias').empty();
+
+    // mostra o nome do mês bonitinho
+    $('#mes-ano').text(
+      new Date(anoAtual, mesAtual)
+        .toLocaleString('pt-BR', { month: 'long', year: 'numeric' })
+        .replace(/de /g, '')
+    );
+
+    let primeiroDia = new Date(anoAtual, mesAtual, 1).getDay(); // 0 é domingo
+    let diasNoMes = new Date(anoAtual, mesAtual + 1, 0).getDate();
+
+    // coloca uns espaços antes do primeiro dia do mês
+    for(let i = 0; i < primeiroDia; i++) {
+      $('#dias').append('<div></div>');
+    }
+
+    // agora sim coloca cada dia do mês
+    for(let dia = 1; dia <= diasNoMes; dia++) {
+
+      let dataCompleta = new Date(anoAtual, mesAtual, dia);
+
+      let classe = 'w-10 h-6 flex items-center justify-center rounded-full cursor-pointer hover:bg-indigo-100 transition';
+
+      // se for hoje, dá um destaquezinho
+      if(dataCompleta.toDateString() === hoje.toDateString()) {
+        classe += ' bg-indigo-200 font-bold';
+      }
+
+      // se o usuário escolheu esse dia como início
+      if(dataInicio && dataInicio.toDateString() === dataCompleta.toDateString()) {
+        classe += ' bg-indigo-600 text-white';
+      }
+
+      // se escolheu como fim
+      if(dataFim && dataFim.toDateString() === dataCompleta.toDateString()) {
+        classe += ' bg-purple-600 text-white';
+      }
+
+      let botao = `<div class="${classe}" data-dia="${dia}">${dia}</div>`;
+      $('#dias').append(botao);
+    }
+  }
+
+  // quando clicar num dia
+  $('#dias').on('click', 'div[data-dia]', function() {
+
+    let dia = $(this).data('dia');
+    let dataSelecionada = new Date(anoAtual, mesAtual, dia);
+
+    // se ainda não escolheu nada ou já escolheu tudo e quer recomeçar
+    if(!dataInicio || (dataInicio && dataFim)) {
+      dataInicio = dataSelecionada;
+      dataFim = null;
+
+      $('#data-inicio').text(dataInicio.toLocaleDateString('pt-BR'));
+      $('#data-fim').text('Clique novamente');
+      $('#resultado').text('Selecione a data final');
+
+    } else {
+      // segunda data escolhida
+      dataFim = dataSelecionada;
+
+      $('#data-fim').text(dataFim.toLocaleDateString('pt-BR'));
+
+      let diffTime = Math.abs(dataFim - dataInicio);
+      let diffDias = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1; // coloquei +1 porque conta os dois dias
+
+      $('#resultado')
+        .text(`Faltam ${diffDias} dias!`)
+        .removeClass('text-gray-500')
+        .addClass('text-green-600');
+    }
+
+    atualizarCalendario();
+  });
+
+  // botão de voltar o mês
+  $('#prev').click(function() {
+    mesAtual--;
+    if(mesAtual < 0) { mesAtual = 11; anoAtual--; }
+    atualizarCalendario();
+  });
+
+  // botão de avançar o mês
+  $('#next').click(function() {
+    mesAtual++;
+    if(mesAtual > 11) { mesAtual = 0; anoAtual++; }
+    atualizarCalendario();
+  });
+
+  // chama o calendário pela primeira vez
+  atualizarCalendario();
+});
+</script>
+
+</body>
+</html>
